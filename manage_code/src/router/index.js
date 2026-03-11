@@ -3,22 +3,23 @@
 		createWebHashHistory
 	} from 'vue-router'
 	import news from '@/views/news/list'
-	import chukujilu from '@/views/chukujilu/list'
-	import yishengyuyue from '@/views/yishengyuyue/list'
-	import zhenduanbingli from '@/views/zhenduanbingli/list'
-	import jiuzhentongzhi from '@/views/jiuzhentongzhi/list'
-	import yaopinxinxi from '@/views/yaopinxinxi/list'
-	import syslog from '@/views/syslog/list'
-	import rukujilu from '@/views/rukujilu/list'
-	import users from '@/views/users/list'
-	import jiuzhenqiandao from '@/views/jiuzhenqiandao/list'
-	import paibanxinxi from '@/views/paibanxinxi/list'
-	import chufangxinxi from '@/views/chufangxinxi/list'
-	import yonghu from '@/views/yonghu/list'
-	import friendshipLink from '@/views/friendshipLink/list'
-	import messages from '@/views/messages/list'
-	import yisheng from '@/views/yisheng/list'
-	import config from '@/views/config/list'
+import chukujilu from '@/views/chukujilu/list'
+import yishengyuyue from '@/views/yishengyuyue/list'
+import zhenduanbingli from '@/views/zhenduanbingli/list'
+import jiuzhentongzhi from '@/views/jiuzhentongzhi/list'
+import tongzhijilu from '@/views/tongzhijilu/list'
+import yaopinxinxi from '@/views/yaopinxinxi/list'
+import syslog from '@/views/syslog/list'
+import rukujilu from '@/views/rukujilu/list'
+import users from '@/views/users/list'
+import jiuzhenqiandao from '@/views/jiuzhenqiandao/list'
+import paibanxinxi from '@/views/paibanxinxi/list'
+import chufangxinxi from '@/views/chufangxinxi/list'
+import yonghu from '@/views/yonghu/list'
+import friendshipLink from '@/views/friendshipLink/list'
+import messages from '@/views/messages/list'
+import yisheng from '@/views/yisheng/list'
+import config from '@/views/config/list'
 	import usersCenter from '@/views/users/center'
 	import yishengRegister from '@/views/yisheng/register'
 	import yishengCenter from '@/views/yisheng/center'
@@ -78,6 +79,11 @@ export const routes = [{
 			path: '/jiuzhentongzhi',
 			name: '就诊通知',
 			component: jiuzhentongzhi
+		}
+		,{
+			path: '/tongzhijilu',
+			name: '通知记录',
+			component: tongzhijilu
 		}
 		,{
 			path: '/yaopinxinxi',
