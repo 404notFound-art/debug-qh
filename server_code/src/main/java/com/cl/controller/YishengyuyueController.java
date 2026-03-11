@@ -141,6 +141,9 @@ public class YishengyuyueController {
 
 
 
+    @Autowired
+    private JiuzhentongzhiService jiuzhentongzhiService;
+
     /**
      * 后端保存
      */
@@ -149,6 +152,7 @@ public class YishengyuyueController {
     public R save(@RequestBody YishengyuyueEntity yishengyuyue, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yishengyuyue);
         yishengyuyueService.insert(yishengyuyue);
+        createNotifications(yishengyuyue);
         return R.ok();
     }
     
@@ -160,7 +164,70 @@ public class YishengyuyueController {
     public R add(@RequestBody YishengyuyueEntity yishengyuyue, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yishengyuyue);
         yishengyuyueService.insert(yishengyuyue);
+        createNotifications(yishengyuyue);
         return R.ok();
+    }
+
+    @Autowired
+    private NotificationService notificationService;
+
+    /**
+     * 创建预约相关的所有通知
+     */
+    private void createNotifications(YishengyuyueEntity yishengyuyue) {
+        // 创建预约成功通知
+        JiuzhentongzhiEntity successNotification = new JiuzhentongzhiEntity();
+        successNotification.setTongzhibianhao("NT" + System.currentTimeMillis());
+        successNotification.setYishengzhanghao(yishengyuyue.getYishengzhanghao());
+        successNotification.setDianhua(yishengyuyue.getDianhua());
+        successNotification.setJiuzhenshijian(yishengyuyue.getYuyueshijian());
+        successNotification.setTongzhishijian(new Date());
+        successNotification.setZhanghao(yishengyuyue.getZhanghao());
+        successNotification.setShouji(yishengyuyue.getShouji());
+        successNotification.setTongzhibeizhu("预约成功，您的预约时间为：" + yishengyuyue.getYuyueshijian());
+        successNotification.setTongzhizhuangtai("待发送");
+        successNotification.setChongshicishu(0);
+        jiuzhentongzhiService.insert(successNotification);
+        // 立即发送预约成功通知
+        notificationService.sendNotification(successNotification);
+
+        // 创建就诊前一天提醒
+        Date appointmentDate = yishengyuyue.getYuyueshijian();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(appointmentDate);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        Date dayBeforeNotificationTime = calendar.getTime();
+
+        JiuzhentongzhiEntity dayBeforeNotification = new JiuzhentongzhiEntity();
+        dayBeforeNotification.setTongzhibianhao("NT" + System.currentTimeMillis() + 1);
+        dayBeforeNotification.setYishengzhanghao(yishengyuyue.getYishengzhanghao());
+        dayBeforeNotification.setDianhua(yishengyuyue.getDianhua());
+        dayBeforeNotification.setJiuzhenshijian(yishengyuyue.getYuyueshijian());
+        dayBeforeNotification.setTongzhishijian(dayBeforeNotificationTime);
+        dayBeforeNotification.setZhanghao(yishengyuyue.getZhanghao());
+        dayBeforeNotification.setShouji(yishengyuyue.getShouji());
+        dayBeforeNotification.setTongzhibeizhu("提醒：您明天有就诊预约，请准时到达。");
+        dayBeforeNotification.setTongzhizhuangtai("待发送");
+        dayBeforeNotification.setChongshicishu(0);
+        jiuzhentongzhiService.insert(dayBeforeNotification);
+
+        // 创建就诊当天提醒
+        calendar.setTime(appointmentDate);
+        calendar.add(Calendar.HOUR_OF_DAY, -2);
+        Date dayOfNotificationTime = calendar.getTime();
+
+        JiuzhentongzhiEntity dayOfNotification = new JiuzhentongzhiEntity();
+        dayOfNotification.setTongzhibianhao("NT" + System.currentTimeMillis() + 2);
+        dayOfNotification.setYishengzhanghao(yishengyuyue.getYishengzhanghao());
+        dayOfNotification.setDianhua(yishengyuyue.getDianhua());
+        dayOfNotification.setJiuzhenshijian(yishengyuyue.getYuyueshijian());
+        dayOfNotification.setTongzhishijian(dayOfNotificationTime);
+        dayOfNotification.setZhanghao(yishengyuyue.getZhanghao());
+        dayOfNotification.setShouji(yishengyuyue.getShouji());
+        dayOfNotification.setTongzhibeizhu("提醒：您今天有就诊预约，距离预约时间还有2小时，请准时到达。");
+        dayOfNotification.setTongzhizhuangtai("待发送");
+        dayOfNotification.setChongshicishu(0);
+        jiuzhentongzhiService.insert(dayOfNotification);
     }
 
 

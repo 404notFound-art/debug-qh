@@ -28,6 +28,7 @@ import com.cl.entity.JiuzhentongzhiEntity;
 import com.cl.entity.view.JiuzhentongzhiView;
 
 import com.cl.service.JiuzhentongzhiService;
+import com.cl.service.NotificationService;
 import com.cl.service.TokenService;
 import com.cl.utils.PageUtils;
 import com.cl.utils.R;
@@ -47,6 +48,9 @@ import com.cl.utils.CommonUtil;
 public class JiuzhentongzhiController {
     @Autowired
     private JiuzhentongzhiService jiuzhentongzhiService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
 
 
@@ -191,14 +195,80 @@ public class JiuzhentongzhiController {
         return R.ok();
     }
     
-	
-
-
-
-
-
-
-
-
+    /**
+     * 重试发送通知
+     */
+    @RequestMapping("/retry")
+    @SysLog("重试发送通知")
+    public R retry(@RequestBody Long id){
+        JiuzhentongzhiEntity notification = jiuzhentongzhiService.selectById(id);
+        if (notification == null) {
+            return R.error("通知不存在");
+        }
+        boolean success = notificationService.retrySendNotification(notification);
+        if (success) {
+            return R.ok("重试发送成功");
+        } else {
+            return R.error("重试发送失败");
+        }
+    }
+    
+    /**
+     * 批量重试发送通知
+     */
+    @RequestMapping("/retryBatch")
+    @SysLog("批量重试发送通知")
+    public R retryBatch(@RequestBody Long[] ids){
+        int successCount = 0;
+        for (Long id : ids) {
+            JiuzhentongzhiEntity notification = jiuzhentongzhiService.selectById(id);
+            if (notification != null) {
+                boolean success = notificationService.retrySendNotification(notification);
+                if (success) {
+                    successCount++;
+                }
+            }
+        }
+        return R.ok("成功重试发送 " + successCount + " 条通知");
+    }
+    
+    /**
+     * 查看通知发送状态统计
+     */
+    @RequestMapping("/statusCount")
+    public R statusCount(){
+        Map<String, Object> result = new HashMap<>();
+        
+        // 查询待发送通知数量
+        EntityWrapper<JiuzhentongzhiEntity> pendingWrapper = new EntityWrapper<>();
+        pendingWrapper.eq("tongzhizhuangtai", "待发送");
+        int pendingCount = jiuzhentongzhiService.selectCount(pendingWrapper);
+        result.put("pendingCount", pendingCount);
+        
+        // 查询发送成功通知数量
+        EntityWrapper<JiuzhentongzhiEntity> successWrapper = new EntityWrapper<>();
+        successWrapper.eq("tongzhizhuangtai", "发送成功");
+        int successCount = jiuzhentongzhiService.selectCount(successWrapper);
+        result.put("successCount", successCount);
+        
+        // 查询发送失败通知数量
+        EntityWrapper<JiuzhentongzhiEntity> failedWrapper = new EntityWrapper<>();
+        failedWrapper.eq("tongzhizhuangtai", "发送失败");
+        int failedCount = jiuzhentongzhiService.selectCount(failedWrapper);
+        result.put("failedCount", failedCount);
+        
+        return R.ok().put("data", result);
+    }
+    
+    /**
+     * 查看发送失败的通知列表
+     */
+    @RequestMapping("/failedList")
+    public R failedList(@RequestParam Map<String, Object> params){
+        EntityWrapper<JiuzhentongzhiEntity> wrapper = new EntityWrapper<>();
+        wrapper.eq("tongzhizhuangtai", "发送失败");
+        PageUtils page = jiuzhentongzhiService.queryPage(params, MPUtil.sort(MPUtil.between(MPUtil.likeOrEq(wrapper, new JiuzhentongzhiEntity()), params), params));
+        return R.ok().put("data", page);
+    }
 
 }
