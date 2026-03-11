@@ -255,6 +255,9 @@ CREATE TABLE `jiuzhentongzhi` (
   `zhanghao` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '账号',
   `shouji` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '手机',
   `tongzhibeizhu` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '通知备注',
+  `fasongzhuangtai` varchar(255) DEFAULT '0' COMMENT '发送状态（0：未发送，1：已发送，2：发送失败）',
+  `chongshicishu` int(11) DEFAULT '0' COMMENT '重试次数',
+  `shibaoyuanyin` varchar(255) DEFAULT NULL COMMENT '失败原因',
   PRIMARY KEY (`id`),
   UNIQUE KEY `tongzhibianhao` (`tongzhibianhao`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='就诊通知';

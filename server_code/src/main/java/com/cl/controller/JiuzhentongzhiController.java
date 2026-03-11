@@ -29,6 +29,7 @@ import com.cl.entity.view.JiuzhentongzhiView;
 
 import com.cl.service.JiuzhentongzhiService;
 import com.cl.service.TokenService;
+import com.cl.service.NoticeService;
 import com.cl.utils.PageUtils;
 import com.cl.utils.R;
 import com.cl.utils.MPUtil;
@@ -48,7 +49,8 @@ public class JiuzhentongzhiController {
     @Autowired
     private JiuzhentongzhiService jiuzhentongzhiService;
 
-
+    @Autowired
+    private NoticeService noticeService;
 
 
 
@@ -189,6 +191,51 @@ public class JiuzhentongzhiController {
     public R delete(@RequestBody Long[] ids){
         jiuzhentongzhiService.deleteBatchIds(Arrays.asList(ids));
         return R.ok();
+    }
+    
+    /**
+     * 重试发送通知
+     */
+    @RequestMapping("/retry")
+    @SysLog("重试发送通知")
+    public R retry(@RequestBody Long[] ids){
+        for(Long id : ids) {
+            JiuzhentongzhiEntity notice = jiuzhentongzhiService.selectById(id);
+            if(notice != null) {
+                notice.setFasongzhuangtai("0");
+                noticeService.sendNotice(notice);
+            }
+        }
+        return R.ok();
+    }
+    
+    /**
+     * 处理所有未发送的通知
+     */
+    @RequestMapping("/processUnsent")
+    @SysLog("处理未发送通知")
+    public R processUnsent(){
+        noticeService.processUnsentNotices();
+        return R.ok();
+    }
+    
+    /**
+     * 获取通知发送状态统计
+     */
+    @RequestMapping("/statusCount")
+    public R statusCount(){
+        int total = jiuzhentongzhiService.selectCount(null);
+        int sent = jiuzhentongzhiService.selectCount(new com.baomidou.mybatisplus.mapper.EntityWrapper<JiuzhentongzhiEntity>().eq("fasongzhuangtai", "1"));
+        int unsent = jiuzhentongzhiService.selectCount(new com.baomidou.mybatisplus.mapper.EntityWrapper<JiuzhentongzhiEntity>().eq("fasongzhuangtai", "0"));
+        int failed = jiuzhentongzhiService.selectCount(new com.baomidou.mybatisplus.mapper.EntityWrapper<JiuzhentongzhiEntity>().eq("fasongzhuangtai", "2"));
+        
+        MapUtils map = new MapUtils();
+        map.put("total", total)
+           .put("sent", sent)
+           .put("unsent", unsent)
+           .put("failed", failed);
+        
+        return R.ok().put("data", map);
     }
     
 	

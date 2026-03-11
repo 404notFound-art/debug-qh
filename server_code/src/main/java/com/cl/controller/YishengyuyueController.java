@@ -29,6 +29,9 @@ import com.cl.entity.view.YishengyuyueView;
 
 import com.cl.service.YishengyuyueService;
 import com.cl.service.TokenService;
+import com.cl.service.NoticeService;
+import com.cl.entity.JiuzhentongzhiEntity;
+import com.cl.service.JiuzhentongzhiService;
 import com.cl.utils.PageUtils;
 import com.cl.utils.R;
 import com.cl.utils.MPUtil;
@@ -48,7 +51,11 @@ public class YishengyuyueController {
     @Autowired
     private YishengyuyueService yishengyuyueService;
 
+    @Autowired
+    private JiuzhentongzhiService jiuzhentongzhiService;
 
+    @Autowired
+    private NoticeService noticeService;
 
 
 
@@ -149,7 +156,34 @@ public class YishengyuyueController {
     public R save(@RequestBody YishengyuyueEntity yishengyuyue, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yishengyuyue);
         yishengyuyueService.insert(yishengyuyue);
+        
+        // 生成通知
+        createAndSendNotice(yishengyuyue);
+        
         return R.ok();
+    }
+    
+    /**
+     * 创建并发送通知
+     */
+    private void createAndSendNotice(YishengyuyueEntity yishengyuyue) {
+        // 创建通知实体
+        JiuzhentongzhiEntity notice = new JiuzhentongzhiEntity();
+        notice.setTongzhibianhao(String.valueOf(System.currentTimeMillis()));
+        notice.setYishengzhanghao(yishengyuyue.getYishengzhanghao());
+        notice.setDianhua(yishengyuyue.getDianhua());
+        notice.setJiuzhenshijian(yishengyuyue.getYuyueshijian());
+        notice.setZhanghao(yishengyuyue.getZhanghao());
+        notice.setShouji(yishengyuyue.getShouji());
+        notice.setTongzhibeizhu("您已成功预约医生，请准时就诊");
+        notice.setFasongzhuangtai("0"); // 初始状态为未发送
+        notice.setChongshicishu(0);
+        
+        // 保存通知
+        jiuzhentongzhiService.insert(notice);
+        
+        // 发送通知
+        noticeService.sendNotice(notice);
     }
     
     /**
@@ -160,6 +194,10 @@ public class YishengyuyueController {
     public R add(@RequestBody YishengyuyueEntity yishengyuyue, HttpServletRequest request){
     	//ValidatorUtils.validateEntity(yishengyuyue);
         yishengyuyueService.insert(yishengyuyue);
+        
+        // 生成通知
+        createAndSendNotice(yishengyuyue);
+        
         return R.ok();
     }
 
